@@ -16,15 +16,18 @@
 const Route = use('Route')
 
 Route
-  .group(() => {
+  .group('users', () => {
     Route.resource('/users', 'UserController')
-     .apiOnly()
+      .apiOnly()
     Route.post('/auth', 'UserController.auth')
   })
   .prefix('api/v1')
 
-  
-
-
-  
-
+Route
+  .group('products', () => {
+    Route.resource('/users', 'UserController')
+      .apiOnly()
+    Route.post('/auth', 'UserController.auth')
+  })
+  .prefix('api/v1')
+  .formats(['json'])
