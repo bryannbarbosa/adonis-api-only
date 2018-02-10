@@ -22,12 +22,12 @@ Route
     Route.post('/auth', 'UserController.auth')
   })
   .prefix('api/v1')
+  .formats(['json'])
 
 Route
   .group('products', () => {
-    Route.resource('/users', 'UserController')
+    Route.resource('/products', 'ProductController')
       .apiOnly()
-    Route.post('/auth', 'UserController.auth')
   })
   .prefix('api/v1')
   .formats(['json'])

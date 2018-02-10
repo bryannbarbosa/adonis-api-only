@@ -20,19 +20,26 @@ class UserController {
   }
 
   async show ({request, response, params}) {
-    const user = await User.where({_id: params.id}).first()
+    const { id } = params
+    const user = await User.where({_id: id}).first()
     return {response: user, status: true}
   }
 
   async update ({request, response, params}) {
     const body = request.post()
-    await User.where({_id: params.id}).update(body)
+    const { id } = params
+    await User.where({_id: id}).update(body)
     const keys = Object.keys(body)
     return {response: 'User has updated', status: true, updated_fields: keys}
   }
 
-  async delete () {
+  async destroy ({request, response, params}) {
+    const { id } = params
+    const user = await User.find(id)
+    await user.delete()
+    return {response: 'User has deleted', status: true}
   }
+
   async auth({request, response, auth}) {
     const { email, password } = request.all()
     return await auth.attempt(email, password)
