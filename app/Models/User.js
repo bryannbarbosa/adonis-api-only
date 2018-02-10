@@ -7,8 +7,8 @@ class User extends Model {
   static get hidden () {
     return ['password']
   }
-  products() {
-    return this.hasMany('App/Models/Product', '_id', 'user_id')
+  products () {
+    return this.referMany('App/Models/Product', '_id')
   }
   static boot () {
     super.boot()

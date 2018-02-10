@@ -7,10 +7,12 @@ class CollectionSchema extends Schema {
     this.collection('users', (collection) => {
       collection.index('email_index', {email: 1}, {unique: true})
     })
+
+    
   }
 
   down () {
-    this.drop('collections')
+    this.drop('users')
   }
 }
 

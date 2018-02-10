@@ -1,5 +1,7 @@
 'use strict'
 
+const Helpers = use('Helpers')
+
 /*
 |--------------------------------------------------------------------------
 | Routes
@@ -19,6 +21,7 @@ Route
   .group('users', () => {
     Route.resource('/users', 'UserController')
       .apiOnly()
+    Route.get('/user/:id/products', 'UserController.products')
     Route.post('/auth', 'UserController.auth')
   })
   .prefix('api/v1')
@@ -30,4 +33,12 @@ Route
       .apiOnly()
   })
   .prefix('api/v1')
+  .middleware('auth')
+  .formats(['json'])
+
+Route.get('upload/:fileId', async ({ params, response }) => {
+  response.download(Helpers.tmpPath(`uploads/${params.fileId}`))
+})
+  .prefix('api/v1')
+  .middleware('auth')
   .formats(['json'])
