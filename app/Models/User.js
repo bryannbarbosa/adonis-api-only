@@ -8,7 +8,7 @@ class User extends Model {
     return ['password']
   }
   products () {
-    return this.referMany('App/Models/Product', '_id')
+    return this.referMany('App/Models/Product')
   }
   static boot () {
     super.boot()

@@ -42,7 +42,9 @@ class UserController {
 
   async auth({request, response, auth}) {
     const { email, password } = request.all()
-    return await auth.attempt(email, password)
+    let token = await auth.attempt(email, password)
+    let user = await User.query().where('email', email).fetch()
+    return {response: token}
   }
 
   async products({request, response, params}) {

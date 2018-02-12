@@ -21,8 +21,8 @@ Route
   .group('users', () => {
     Route.resource('/users', 'UserController')
       .apiOnly()
-    Route.get('/user/:id/products', 'UserController.products')
     Route.post('/auth', 'UserController.auth')
+    Route.post('/jwt', 'UserController.jwt')
   })
   .prefix('api/v1')
   .formats(['json'])
@@ -31,6 +31,7 @@ Route
   .group('products', () => {
     Route.resource('/products', 'ProductController')
       .apiOnly()
+    Route.get('/products/user/:id', 'ProductController.products')
   })
   .prefix('api/v1')
   .middleware('auth')
