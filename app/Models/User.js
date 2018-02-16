@@ -1,41 +1,32 @@
 'use strict'
 
-const Model = use('Model')
+const BaseModel = use('Model')
+const mongooseHidden = require('mongoose-hidden', )({ defaultHidden: { password: true }})
 
-class User extends Model {
-
-  static get hidden () {
-    return ['password']
+/**
+ * @class User
+ */
+class User extends BaseModel {
+  static boot ({ schema }) {
+    schema.plugin(mongooseHidden)
+    this.addHook('preSave', 'UserHook.hashPassword')
   }
-  products () {
-    return this.referMany('App/Models/Product')
-  }
-  static boot () {
-    super.boot()
-
-    /**
-     * A hook to hash the user password before saving
-     * it to the database.
-     *
-     * Look at `app/Models/Hooks/User.js` file to
-     * check the hashPassword method
-     */
-    this.addHook('beforeCreate', 'User.hashPassword')
-  }
-
   /**
-   * A relationship on tokens is required for auth to
-   * work. Since features like `refreshTokens` or
-   * `rememberToken` will be saved inside the
-   * tokens table.
-   *
-   * @method tokens
-   *
-   * @return {Object}
+   * User's schema
    */
-  tokens () {
-    return this.hasMany('App/Models/Token')
+  static get schema () {
+    return {
+      name: { type: String, required: true },
+      email: { type: String, required: true },
+      password: { type: String, required: true },
+      type: { type:String, enum: ['root', 'dealer'], required: true },
+      address: { type:String, required: true }
+    }
+  }
+
+  static get primaryKey () {
+    return '_id'
   }
 }
 
-module.exports = User
+module.exports = User.buildModel('User')

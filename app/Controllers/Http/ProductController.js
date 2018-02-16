@@ -1,20 +1,19 @@
 'use strict'
 
-const Product = use('App/Models/Product');
-const User = use('App/Models/User');
+const User = use('App/Models/User')
 const Helpers = use('Helpers')
 
 class ProductController {
   async index ({request, response}) {
-    const product = await Product.all()
-    response.json({response: product, status: true})
+    const user = await User.find({}).fetch()
+    response.json({response: user, status: true})
   }
 
   async store ({request, response}) {
     if('name', 'image', 'price', 'quantity', 'user_id' in request.post()) {
-      const body = request.only(['name', 'image', 'price', 'quantity', 'user_id'])
+      const body = request.only(['name', 'image', 'price', 'quantity'])
       const user = await User.where({_id: body.user_id}).first()
-
+      
       if (user.user_type == 'administrator') {
         const image = request.file('image', {
         types: ['image'],
@@ -31,9 +30,9 @@ class ProductController {
         return image.error()
       }
       body.image = `${request.protocol()}://${request.hostname()}:3333/api/v1/upload/${name}`
-      const product = new Product(body)
-      await product.save()
-      return {response: 'Product created', status: true, belongsTo: {name: user.name, email: user.email}}
+      user.products.push(body)
+      response.json({response: 'Product created', status: true, belongsTo: {name: user.name, 
+      email: user.email}})
       }
       
       else {
@@ -47,8 +46,10 @@ class ProductController {
 
   async show ({request, response, params}) {
     const { id } = params
-    const product = await Product.where({_id: id}).first()
-    response.json({response: product, status: true})
+    const knexQuery = knex('users')
+    const mongoQuery = {products: id}
+    mongoToKnex(mongoQuery, knexQuery);
+    response.json({response: knexQuery, status: true})
   }
 
   async update ({request, response, params}) {
@@ -71,22 +72,16 @@ class ProductController {
       body.image = `${request.protocol()}://${request.hostname()}:3333/api/v1/upload/${name}`
     }
 
-    await Product.where({_id: id}).update(body)
+    await User.where({products: id}).update(body)
     const keys = Object.keys(body)
     response.json({response: 'Product has updated', status: true, updated_fields: keys})
   }
 
   async destroy ({request, response, params}) {
     const { id } = params
-    const product = await Product.find(id)
+    const product = await User.find({products: id})
     await product.delete()
     response.json({response: 'Product has deleted', status: true})
-  }
-
-  async products({request, response, params}) {
-    const { id } = params
-    const products = await Product.where({user_id: id}).fetch()
-    response.json({response: products, status: true})
   }
 }
 

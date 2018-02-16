@@ -11,7 +11,7 @@
     "adonisjs",
     "adonis-app"
   ],
-  "author": "",
+  "author": "Bryann Barbosa",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
@@ -23,7 +23,8 @@
     "@adonisjs/framework": "^5.0.4",
     "@adonisjs/ignitor": "^2.0.5",
     "@adonisjs/lucid": "^5.0.2",
-    "lucid-mongo": "^2.2.5"
+    "adonis-mongoose-model": "^2.2.0",
+    "mongoose-hidden": "^1.5.2"
   },
   "devDependencies": {},
   "autoload": {
