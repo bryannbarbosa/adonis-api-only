@@ -5,16 +5,17 @@ const Helpers = use('Helpers')
 
 class ProductController {
   async index ({request, response}) {
-    const user = await User.find({}).fetch()
-    response.json({response: user, status: true})
+    const products = await User.find({"products": {"$exists": true}}).select('products')
+    response.json({response: products, status: true})
   }
 
   async store ({request, response}) {
     if('name', 'image', 'price', 'quantity', 'user_id' in request.post()) {
-      const body = request.only(['name', 'image', 'price', 'quantity'])
-      const user = await User.where({_id: body.user_id}).first()
+      const body = request.only(['name', 'image', 'price', 'quantity', 'user_id'])
+      const id = body.user_id
+      const user  = await User.findOne({_id: body.user_id})
       
-      if (user.user_type == 'administrator') {
+      if (user.type == 'root') {
         const image = request.file('image', {
         types: ['image'],
         size: '5mb'
@@ -30,11 +31,20 @@ class ProductController {
         return image.error()
       }
       body.image = `${request.protocol()}://${request.hostname()}:3333/api/v1/upload/${name}`
-      user.products.push(body)
-      response.json({response: 'Product created', status: true, belongsTo: {name: user.name, 
-      email: user.email}})
+      delete body.user_id
+      body.price = parseFloat(body.price)
+      const exists = await User.find({"products.name": body.name}).select("products")
+      if(exists.length >= 1) {
+        response.json({
+          response: 'This product already exists',
+          status: false
+        })
+      } else {
+        await User.findByIdAndUpdate(id, { $push: { products: body }})
+        response.json({response: 'Product created', status: true, belongsTo: {name: user.name, 
+          email: user.email}})
+        }
       }
-      
       else {
         response.json({response: 'You don\'t have permission to store products'})
       }
@@ -46,10 +56,8 @@ class ProductController {
 
   async show ({request, response, params}) {
     const { id } = params
-    const knexQuery = knex('users')
-    const mongoQuery = {products: id}
-    mongoToKnex(mongoQuery, knexQuery);
-    response.json({response: knexQuery, status: true})
+    const product = await User.findOne({'products._id': id}).select("products")
+    response.json({response: product, status: true})
   }
 
   async update ({request, response, params}) {
@@ -71,17 +79,35 @@ class ProductController {
       }
       body.image = `${request.protocol()}://${request.hostname()}:3333/api/v1/upload/${name}`
     }
-
-    await User.where({products: id}).update(body)
+    let query = {}
+    for (let key in body) {
+      let value = body[key]
+      if(value.match(/^-{0,1}\d+$/)) {
+        body[key] = parseInt(body[key])
+      }
+      if(value.match(/^\d+\.\d+$/)) {
+        body[key] = parseFloat(body[key])
+      }
+      query['products.$.' + key] = body[key]
+    }
+    await User.update({'products._id': id}, {$set: query})
     const keys = Object.keys(body)
     response.json({response: 'Product has updated', status: true, updated_fields: keys})
   }
 
   async destroy ({request, response, params}) {
     const { id } = params
-    const product = await User.find({products: id})
-    await product.delete()
+    await User.findOneAndUpdate({}, { $pull: { 'products': {"_id": id } } })
     response.json({response: 'Product has deleted', status: true})
+  }
+
+  async products({request, response, params}) {
+    const { id } = params
+    const products = await User.find({"_id": id, "products": {"$exists": true}}).select('products')
+    response.json({
+      response: products,
+      status: true
+    })
   }
 }
 

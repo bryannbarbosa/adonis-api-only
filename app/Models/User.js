@@ -2,6 +2,8 @@
 
 const BaseModel = use('Model')
 const mongooseHidden = require('mongoose-hidden', )({ defaultHidden: { password: true }})
+const uniqueValidator = require('mongoose-unique-validator')
+const Product = use('App/Models/Product')
 
 /**
  * @class User
@@ -9,6 +11,7 @@ const mongooseHidden = require('mongoose-hidden', )({ defaultHidden: { password:
 class User extends BaseModel {
   static boot ({ schema }) {
     schema.plugin(mongooseHidden)
+    schema.plugin(uniqueValidator)
     this.addHook('preSave', 'UserHook.hashPassword')
   }
   /**
@@ -17,10 +20,11 @@ class User extends BaseModel {
   static get schema () {
     return {
       name: { type: String, required: true },
-      email: { type: String, required: true },
+      email: { type: String, required: true, unique: true, index: true },
       password: { type: String, required: true },
-      type: { type:String, enum: ['root', 'dealer'], required: true },
-      address: { type:String, required: true }
+      type: { type: String, enum: ['root', 'dealer'], required: true },
+      address: { type: String, required: true },
+      products: [{type: Product.schema}]
     }
   }
 
