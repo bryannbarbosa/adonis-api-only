@@ -32,9 +32,10 @@ Route
     Route.resource('/products', 'ProductController')
       .apiOnly()
     Route.get('/products/user/:id', 'ProductController.products')
+    Route.get('/product/search', 'ProductController.search')
   })
   .prefix('api/v1')
-  .middleware('auth')
+  //.middleware('auth')
   .formats(['json'])
 
 Route.get('upload/:fileId', async ({ params, response }) => {

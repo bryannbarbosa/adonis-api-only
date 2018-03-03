@@ -109,6 +109,18 @@ class ProductController {
       status: true
     })
   }
+
+  async search({request, response}) {
+    const q = request.input('q').replace('+', ' ')
+    let products = await User.findOne({'products.name': 'Produto de teste, para barba e bigode 3'}, {'products': {'$elemMatch': {'name': q}}})
+    if(products.products.length == 0) {
+      products = await await User.find({'products.name': q}, {'products': {'$elemMatch': {'$regex': `^w`, '$options:': 'i'}}})
+    }
+    response.json({
+      response: products,
+      status: true
+    })
+  }
 }
 
 module.exports = ProductController
