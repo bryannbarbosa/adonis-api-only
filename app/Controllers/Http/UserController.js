@@ -1,7 +1,7 @@
 'use strict'
 
 const User = use('App/Models/User')
-const Hash = use('Hash')
+const Helpers = use('Helpers')
 
 class UserController {
   async index ({request, response}) {
@@ -10,14 +10,23 @@ class UserController {
   }
 
   async store ({request, response}) {
-    if('name', 'email', 'password', 'type', 'address' in request.post()) {
-        const body = request.only(['name', 'email', 'password', 'type', 'address'])
+        const body = request.only(['name', 'email', 'telephone', 'password', 'type', 'address', 'city'])
+        const image = request.file('profile_pic', {
+          types: ['image'],
+          size: '7mb'
+        });
+        const image_name = `${new Date().getTime()}.${image.subtype}`
+        await image.move(Helpers.tmpPath('uploads'), {
+          name: image_name
+        })
+        if(!image.moved()) {
+          return image.error()
+        }
+        body.profile_pic = `${request.protocol()}://${request.hostname()}:3333/api/v1/upload/${image_name}`
         const user = new User(body)
         await user.save()
         response.json({response: 'User is created with success', status: true})
-      } else {
-       response.json({response: 'Name, email, password, address and user type are required', status: false})
-      }
+      
   }
 
   async show ({request, response, params}) {

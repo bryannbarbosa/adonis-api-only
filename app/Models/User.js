@@ -5,6 +5,7 @@ const mongooseHidden = require('mongoose-hidden', )({ defaultHidden: { password:
 const uniqueValidator = require('mongoose-unique-validator')
 const Product = use('App/Models/Product')
 
+
 /**
  * @class User
  */
@@ -21,10 +22,13 @@ class User extends BaseModel {
     return {
       name: { type: String, required: true },
       email: { type: String, required: true, unique: true, index: true },
+      profile_pic: { type: String, required: true},
       password: { type: String, required: true },
+      telephone: { type: String, required: true },
       type: { type: String, enum: ['root', 'dealer'], required: true },
       address: { type: String, required: true },
-      products: [{type: Product.schema}]
+      city: { type: String, required: true },
+      products: [{ type: Product.schema }]
     }
   }
 
