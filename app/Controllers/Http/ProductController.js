@@ -71,13 +71,13 @@ class ProductController {
         size: '5mb'
       })
       const name = `${new Date().getTime()}.${image.subtype}`
-      await image.move(Helpers.tmpPath('uploads'), {
+      await image.move(Helpers.publicPath('uploads'), {
         name: name
       })
       if(!image.moved()) {
         return image.error()
       }
-      body.image = `${request.protocol()}://${request.hostname()}:3333/api/v1/upload/${name}`
+      body.image = `${request.protocol()}://${request.hostname()}:3333/uploads/${name}`
     }
     let query = {}
     for (let key in body) {
