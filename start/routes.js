@@ -38,9 +38,9 @@ Route
   //.middleware('auth')
   .formats(['json'])
 
-Route.get('upload/:fileId', async ({ params, response }) => {
-  response.download(Helpers.tmpPath(`uploads/${params.fileId}`))
-})
-  .prefix('api/v1')
-  .middleware('auth')
-  .formats(['json'])
+// Route.get('upload/:fileId', async ({ params, response }) => {
+//   response.download(Helpers.publicPath(`uploads/${params.fileId}`))
+// })
+//   .prefix('api/v1')
+//   //.middleware('auth')
+//   .formats(['json'])

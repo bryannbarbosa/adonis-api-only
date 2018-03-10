@@ -16,13 +16,13 @@ class UserController {
           size: '7mb'
         });
         const image_name = `${new Date().getTime()}.${image.subtype}`
-        await image.move(Helpers.tmpPath('uploads'), {
+        await image.move(Helpers.publicPath('uploads'), {
           name: image_name
         })
         if(!image.moved()) {
           return image.error()
         }
-        body.profile_pic = `${request.protocol()}://${request.hostname()}:3333/api/v1/upload/${image_name}`
+        body.profile_pic = `${request.protocol()}://${request.hostname()}:3333/uploads/${image_name}`
         const user = new User(body)
         await user.save()
         response.json({response: 'User is created with success', status: true})
