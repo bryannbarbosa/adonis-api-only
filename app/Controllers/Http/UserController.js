@@ -2,6 +2,7 @@
 
 const User = use('App/Models/User')
 const Helpers = use('Helpers')
+const base64Img = require('base64-img');
 
 class UserController {
   async index ({request, response}) {
@@ -10,19 +11,19 @@ class UserController {
   }
 
   async store ({request, response}) {
-        const body = request.only(['name', 'email', 'telephone', 'password', 'type', 'address', 'city'])
-        const image = request.file('profile_pic', {
-          types: ['image'],
-          size: '7mb'
-        });
-        const image_name = `${new Date().getTime()}.${image.subtype}`
-        await image.move(Helpers.publicPath('uploads'), {
-          name: image_name
-        })
-        if(!image.moved()) {
-          return image.error()
-        }
+        let body = request.post()
+        const image = request.input('profile_pic')
+        const image_name = `${new Date().getTime()}`
         body.profile_pic = `${request.protocol()}://${request.hostname()}:3333/uploads/${image_name}`
+        await base64Img.img(image, Helpers.publicPath('uploads'), image_name, (err, filepath) => {
+          if(err) {
+            return err;
+          }
+        });
+        let extension = image.match(/[a-z]+:[a-z]+\/[a-z]+/g)
+        extension = extension[0].match(/[a-z]+/g)
+        extension = extension[extension.length - 1]
+        body.profile_pic += `.${extension}`
         const user = new User(body)
         await user.save()
         response.json({response: 'User is created with success', status: true})

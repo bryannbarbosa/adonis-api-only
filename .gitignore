@@ -13,3 +13,7 @@ yarn.lock
 
 # The development sqlite file
 database/development.sqlite
+
+# Uploads Files
+
+public/uploads/*
