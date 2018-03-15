@@ -2,6 +2,8 @@
 
 const User = use('App/Models/User')
 const Helpers = use('Helpers')
+const base64Img = require('base64-img');
+
 
 class ProductController {
   async index ({request, response}) {
@@ -10,34 +12,30 @@ class ProductController {
   }
 
   async store ({request, response}) {
-    if('name', 'image', 'price', 'quantity', 'user_id' in request.post()) {
-      const body = request.only(['name', 'image', 'price', 'quantity', 'user_id'])
+      const body = request.post()
       const id = body.user_id
       const user  = await User.findOne({_id: body.user_id})
       
       if (user.type == 'root') {
-        const image = request.file('image', {
-        types: ['image'],
-        size: '5mb'
-      })
-
-      const name = `${new Date().getTime()}.${image.subtype}`
-    
-      await image.move(Helpers.publicPath('uploads'), {
-        name: name
-      })
-    
-      if(!image.moved()) {
-        return image.error()
-      }
-      body.image = `${request.protocol()}://${request.hostname()}:3333/uploads/${name}`
-      delete body.user_id
-      body.price = parseFloat(body.price)
-      const exists = await User.find({"products.name": body.name}).select("products")
-      if(exists.length >= 1) {
-        response.json({
-          response: 'This product already exists',
-          status: false
+        const image = request.input('image')
+        const image_name = `${new Date().getTime()}`
+        body.image = `${request.protocol()}://${request.hostname()}:3333/uploads/${image_name}`
+        await base64Img.img(image, Helpers.publicPath('uploads'), image_name, (err, filepath) => {
+          if(err) {
+            return err;
+          }
+        });
+        let extension = image.match(/[a-z]+:[a-z]+\/[a-z]+/g)
+        extension = extension[0].match(/[a-z]+/g)
+        extension = extension[extension.length - 1]
+        body.image += `.${extension}`
+        delete body.user_id
+        body.price = parseFloat(body.price)
+        const exists = await User.find({"products.name": body.name}).select("products")
+        if(exists.length >= 1) {
+          response.json({
+            response: 'This product already exists',
+            status: false
         })
       } else {
         await User.findByIdAndUpdate(id, { $push: { products: body }})
@@ -48,10 +46,6 @@ class ProductController {
       else {
         response.json({response: 'You don\'t have permission to store products'})
       }
-
-    } else {
-      response.json({response: 'name, image, price, quantity and user_id are required'})
-    }
   }
 
   async show ({request, response, params}) {
@@ -65,19 +59,19 @@ class ProductController {
     const body = request.post()
     const { id } = params
 
-    if(request.file('image')) {
-      const image = request.file('image', {
-        types: ['image'],
-        size: '5mb'
-      })
-      const name = `${new Date().getTime()}.${image.subtype}`
-      await image.move(Helpers.publicPath('uploads'), {
-        name: name
-      })
-      if(!image.moved()) {
-        return image.error()
-      }
-      body.image = `${request.protocol()}://${request.hostname()}:3333/uploads/${name}`
+    if(request.input('image')) {
+      const image = request.input('image')
+      const image_name = `${new Date().getTime()}`
+      body.image = `${request.protocol()}://${request.hostname()}:3333/uploads/${image_name}`
+      await base64Img.img(image, Helpers.publicPath('uploads'), image_name, (err, filepath) => {
+        if(err) {
+          return err;
+        }
+      });
+      let extension = image.match(/[a-z]+:[a-z]+\/[a-z]+/g)
+      extension = extension[0].match(/[a-z]+/g)
+      extension = extension[extension.length - 1]
+      body.image += `.${extension}`
     }
     let query = {}
     for (let key in body) {
